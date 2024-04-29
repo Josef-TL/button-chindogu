@@ -1,4 +1,4 @@
-package com.example.pressbutton.ui.button
+package com.example.pressbutton.stopwatchmethod
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -10,34 +10,45 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+
 
 @Composable
-fun TimedButton(){
+fun TimerScreenContent(timerViewModel: TimerVM) {
+    val timerValue by timerViewModel.timer.collectAsState()
+
+    TimerButton(
+        timerValue = timerValue,
+        onStartClick = { timerViewModel.startTimer() },
+        onPauseClick = { timerViewModel.pauseTimer() },
+        onStopClick = { timerViewModel.stopTimer() }
+    )
+}
+
+
+@Composable
+fun TimerButton(
+    timerValue:Long,
+    onStartClick: () -> Unit,
+    onPauseClick: () -> Unit,
+    onStopClick:()->Unit
+
+){
     // This code yoinks the state of the button
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
 
-    val timedButtonViewModel: TimedButtonVM = viewModel()
-
     Column(modifier = Modifier
         .fillMaxSize()
-        .padding(8.dp)
         , horizontalAlignment = Alignment.CenterHorizontally)
     {
-        Text(text = "You have pressed this button for ${timedButtonViewModel.diffRet} seconds",
-            fontSize = 26.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .padding(top= 16.dp)
-        )
+        Text(text = timerValue.formatTime(), fontSize = 24.sp)
 
         Button(
             onClick = { },
@@ -48,11 +59,16 @@ fun TimedButton(){
                 .height(height=75.dp)
         ) {
             // Code here
-            timedButtonViewModel.calcTime(pressed)
-
-            Text(text = "Press here:")
+            if(pressed){
+                onStopClick
+                onStartClick
+            } else {
+                onPauseClick
+            }
+            Text(text = "Press here: ${pressed}")
         }
-        
+
     }
 
 }
+
